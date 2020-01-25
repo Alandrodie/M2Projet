@@ -32,7 +32,7 @@ class EdgeMap
 	 * Open and load an image located in the system at filePath
 	 */
 	bool open(string filePath);
-
+	double distanceBetweenTwoPoints(double x, double y, double a, double b);
 	Mat BackgroundEdge();
 	/**
 	 * Shows the interface with the input image
