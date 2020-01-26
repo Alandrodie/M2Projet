@@ -71,21 +71,79 @@ void EdgeMap::process()
 		finaledgemap.at<uchar>(MEStill[i].y,MEStill[i].x)=0;
 	}
    
-
-}
-
-vector<Edgecoord> MatToVector(Mat mat){
-	vector<Edgecoord> vec;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 q
-	for (int i = 0; i < mat.rows; i++)
+	//parcours de la final edge map pour trouver les candidats
+	//horizontal
+	vector<Edgecoord> horizontalcand;
+		for (int i = 0; i < finaledgemap.rows; i++)
     {
-        for (int j = 0; j < mat.cols; j++)
+		int first = -1;
+		int indexlast=-1;
+        for (int j = 0; j < finaledgemap.cols; j++)
 		{
-			if(mat.at<uchar>(i,j)==0){
+			if(first==-1){
+				if(finaledgemap.at<uchar>(j,i)==0){
+					first =j;
+				}
+			}
+			else{
+				if(finaledgemap.at<uchar>(j,i)==0){
+					indexlast =j;
+				}
+			}
+		}
+		if(first!=-1 && indexlast!=-1){
+			horizontalcand.push_back({i,first});
+			horizontalcand.push_back({i,indexlast});
+		}
+		else if (first!=-1 && indexlast==-1){
+			horizontalcand.push_back({i,first});
+			horizontalcand.push_back({i,finaledgemap.cols});
+		}
+		
+	} 
+		//vertical
+		vector<Edgecoord> verticalcand;
+		for (int i = 0; i < finaledgemap.cols; i++)
+    {
+		int first = -1;
+		int indexlast=-1;
+        for (int j = 0; j < finaledgemap.rows; j++)
+		{
+			if(first==-1){
+				if(finaledgemap.at<uchar>(j,i)==0){
+					first =j;
+				}
+			}
+			else{
+				if(finaledgemap.at<uchar>(j,i)==0){
+					indexlast =j;
+				}
+			}
+		}
+		if(first!=-1 && indexlast!=-1){
+			verticalcand.push_back({first,i});
+			verticalcand.push_back({indexlast,i});
+		}
+		else if (first!=-1 && indexlast==-1){
+			verticalcand.push_back({first,i});
+			verticalcand.push_back({finaledgemap.rows,i});
+		}
+	}
+} 
+
+vector<Edgecoord> EdgeMap::MatToVector(Mat toconvertmat){
+	vector<Edgecoord> vec;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+	for (int i = 0; i < toconvertmat.rows; i++)
+    {
+        for (int j = 0; j < toconvertmat.cols; j++)
+		{
+			if(toconvertmat.at<uchar>(i,j)==0){
 				vec.push_back({i,j});
 			}
 		}
 	} 
+	return vec;
 }
-double distanceBetweenTwoPoints(double x, double y, double a, double b){
+double EdgeMap::distanceBetweenTwoPoints(double x, double y, double a, double b){
 	return sqrt(pow(x - a, 2) + pow(y - b, 2));
 }

@@ -38,7 +38,7 @@ class EdgeMap
 	 * Shows the interface with the input image
 	 */
 	void process();
-	vector<Edgecoord> MatToVector(Mat mat);
+	vector<Edgecoord> MatToVector(Mat toconvertmat);
 };
 
 #endif
