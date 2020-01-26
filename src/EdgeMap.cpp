@@ -10,7 +10,7 @@ EdgeMap::EdgeMap()
 EdgeMap::~EdgeMap()
 {
 }
-
+//ouvrir la video et prendre les deux premieres frames
 bool EdgeMap::open(string filePath)
 {
 	video = cv::VideoCapture(filePath);
@@ -18,7 +18,7 @@ bool EdgeMap::open(string filePath)
 	video >> LastImage;
 	video >> curImage;
 }
-
+//pour avoir les background edges
 Mat EdgeMap::BackgroundEdge(){
 	int numberofframes=20;
 	Mat curframe;
@@ -32,9 +32,12 @@ Mat EdgeMap::BackgroundEdge(){
 	}
 	return Bedges;
 }
+//process principal
 void EdgeMap::process()
 {	
 	cv::Mat CannyCurImage,CannyLastImage,res,Edges,Edgesbis,Bedges;
+
+	//canny pour avoir les differents edge map que l'on a besoin
 	Canny(curImage,CannyCurImage,100,200);
     Canny(LastImage,CannyLastImage,100,200);
 	absdiff(CannyLastImage,CannyCurImage,Edges);
@@ -43,11 +46,10 @@ void EdgeMap::process()
 	Bedges = BackgroundEdge();
 	vector<Edgecoord> En = MatToVector(CannyCurImage);
 	vector<Edgecoord> DEn = MatToVector(Edgesbis);
-	vector<Edgecoord> DEn = MatToVector(Edgesbis);
-	vector<Edgecoord> Denprevious ; //TODO PREVIOUS EDGEMAP
+	vector<Edgecoord> Denprevious =MatToVector(CannyLastImage);
 	double Tdist=5;
 	vector<Edgecoord> MEchange,MEStill;
-	
+	//calcul des edge maps mouvante et non mouvante
 	for (int i = 0; i < En.size(); i++)
 	{
 	    if(distanceBetweenTwoPoints(En[i].x,En[i].y,DEn[i].x,DEn[i].y)<=Tdist){
@@ -60,7 +62,7 @@ void EdgeMap::process()
 		}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
 	}
 	
-	//reunion des deux Moving edges set 
+	//reunion des deux Moving edges pour faire la final edge map
 	Mat finaledgemap(3,3,CV_32F, Scalar(255));
 	for (int i = 0; i < MEchange.size(); i++)
 	{
@@ -129,6 +131,32 @@ void EdgeMap::process()
 			verticalcand.push_back({finaledgemap.rows,i});
 		}
 	}
+	//Trouver les VOP avec les candidats avec un AND
+	Mat VOPS(3,3,CV_32F, Scalar(255));
+	for(int i ; i < verticalcand.size();i++){
+		for(int j ; j < horizontalcand.size();j++){
+		if(verticalcand[i].x == horizontalcand[i].x && verticalcand[i].y== horizontalcand[i].y)
+			VOPS.at<uchar>(j,i)=0;
+		}
+	}
+	//label extracted vops
+	Mat labels(VOPS.size(),CV_32S);
+	int nLabels = connectedComponents(VOPS,labels,8);
+	vector<Vec3b> colors(nLabels);
+	colors[0]= Vec3b(0,0,0);
+	for(int i=1; i< nLabels ; ++i){
+		colors[i]=Vec3b ( (rand()&255),(rand()&255),(rand()&255));
+	}
+	Mat labeled(VOPS.size(),CV_8UC3);
+	for(int i ; i < labeled.rows;i++){
+		for(int j ; j < labeled.cols;j++){
+			int label = labels.at<int>(i,j);
+			Vec3b &pixel = labeled.at<Vec3b>(i,j);
+			pixel = colors[label];
+		}
+	}
+
+
 } 
 
 vector<Edgecoord> EdgeMap::MatToVector(Mat toconvertmat){
