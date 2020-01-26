@@ -123,6 +123,33 @@ ProjetM2/fast:
 	$(MAKE) -f CMakeFiles/ProjetM2.dir/build.make CMakeFiles/ProjetM2.dir/build
 .PHONY : ProjetM2/fast
 
+EdgeMap.o: EdgeMap.cpp.o
+
+.PHONY : EdgeMap.o
+
+# target to build an object file
+EdgeMap.cpp.o:
+	$(MAKE) -f CMakeFiles/ProjetM2.dir/build.make CMakeFiles/ProjetM2.dir/EdgeMap.cpp.o
+.PHONY : EdgeMap.cpp.o
+
+EdgeMap.i: EdgeMap.cpp.i
+
+.PHONY : EdgeMap.i
+
+# target to preprocess a source file
+EdgeMap.cpp.i:
+	$(MAKE) -f CMakeFiles/ProjetM2.dir/build.make CMakeFiles/ProjetM2.dir/EdgeMap.cpp.i
+.PHONY : EdgeMap.cpp.i
+
+EdgeMap.s: EdgeMap.cpp.s
+
+.PHONY : EdgeMap.s
+
+# target to generate assembly for a file
+EdgeMap.cpp.s:
+	$(MAKE) -f CMakeFiles/ProjetM2.dir/build.make CMakeFiles/ProjetM2.dir/EdgeMap.cpp.s
+.PHONY : EdgeMap.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -159,6 +186,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... ProjetM2"
 	@echo "... edit_cache"
+	@echo "... EdgeMap.o"
+	@echo "... EdgeMap.i"
+	@echo "... EdgeMap.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

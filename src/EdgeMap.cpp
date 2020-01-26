@@ -1,8 +1,5 @@
 #include "EdgeMap.h"
 
-struct Edgecoord{
-	int x,y;
-};
 EdgeMap::EdgeMap()
 {
 }
@@ -139,6 +136,8 @@ void EdgeMap::process()
 			VOPS.at<uchar>(j,i)=0;
 		}
 	}
+	imshow("test",VOPS);
+	waitKey(0);
 	//label extracted vops
 	Mat labels(VOPS.size(),CV_32S);
 	int nLabels = connectedComponents(VOPS,labels,8);
@@ -155,8 +154,8 @@ void EdgeMap::process()
 			pixel = colors[label];
 		}
 	}
-
-
+	imshow("test",labeled);
+	waitKey(0);
 } 
 
 vector<Edgecoord> EdgeMap::MatToVector(Mat toconvertmat){

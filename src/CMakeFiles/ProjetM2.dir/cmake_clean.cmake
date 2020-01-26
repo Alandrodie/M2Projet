@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/ProjetM2.dir/main.cpp.o"
+  "CMakeFiles/ProjetM2.dir/EdgeMap.cpp.o"
   "ProjetM2.pdb"
   "ProjetM2"
 )

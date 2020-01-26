@@ -1,5 +1,3 @@
-#ifndef SOURCE_DIRECTORY__PreProcess_H_
-#define SOURCE_DIRECTORY__PreProcess_H_
 
 #include <iostream>
 using namespace std;
@@ -10,6 +8,9 @@ using namespace cv;
 /**
  * 
  */
+struct Edgecoord{
+	int x,y;
+};
 class EdgeMap
 {
   private:
@@ -29,16 +30,21 @@ class EdgeMap
 	virtual ~EdgeMap();
 
 	/**
-	 * Open and load an image located in the system at filePath
+	 * Open and load a video  located in the system at filePath
 	 */
 	bool open(string filePath);
+	/**
+	 * Get distance between two points
+	 */
 	double distanceBetweenTwoPoints(double x, double y, double a, double b);
+	/**
+	 * return the background edges map of the current frame
+	 */
 	Mat BackgroundEdge();
 	/**
-	 * Shows the interface with the input image
+	 * launch process
 	 */
 	void process();
 	vector<Edgecoord> MatToVector(Mat toconvertmat);
 };
 
-#endif
