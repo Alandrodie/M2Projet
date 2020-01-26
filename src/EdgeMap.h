@@ -46,5 +46,6 @@ class EdgeMap
 	 */
 	void process();
 	vector<Edgecoord> MatToVector(Mat toconvertmat);
+	double getThreshVal_Otsu_8u( const cv::Mat& _src );
 };
 
