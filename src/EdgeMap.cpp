@@ -11,9 +11,29 @@ EdgeMap::~EdgeMap()
 bool EdgeMap::open(string filePath)
 {
 	video = cv::VideoCapture(filePath);
-
+	for (int i= 0; i < 2; i++)
+	{
+		video >> LastImage;
+		video >> curImage;
+	}
+	
+	//video >> LastImage;
+	//video >> curImage;
+}
+void EdgeMap::boucle(string filePath){
+	video = cv::VideoCapture(filePath);
 	video >> LastImage;
-	video >> curImage;
+	int indiceb=0;
+	while(1){
+		video >> curImage;
+    	if (curImage.empty() ||indiceb==30){
+			break;
+		}	
+		cout << indiceb << endl;
+		process(LastImage,curImage,indiceb);
+	curImage.copyTo(LastImage);
+	indiceb++;
+  }
 }
 //pour avoir les background edges
 Mat EdgeMap::BackgroundEdge(){
@@ -30,23 +50,31 @@ Mat EdgeMap::BackgroundEdge(){
 	return Bedges;
 }
 //process principal
-void EdgeMap::process()
+void EdgeMap::process(Mat LastI,Mat curI,int indiceb)
 {	
+	//imshow("oskour",LastI);
+	//waitKey(0);
+	//imshow("oskour",curI);
+	//waitKey(0);
+
 	cv::Mat CannyCurImage,CannyLastImage,res,Edges,Edgesbis,Bedges,placeholder;
 
 	//canny pour avoir les differents edge map que l'on a besoin
-	Canny(curImage,CannyCurImage,100,200);
-    Canny(LastImage,CannyLastImage,100,200);
+	Canny(curI,CannyCurImage,100,200);
+    Canny(LastI,CannyLastImage,100,200);
 	absdiff(CannyLastImage,CannyCurImage,Edges);
-	absdiff(LastImage,curImage,res);
+	absdiff(LastI,curI,res);
 	//threshold
 	double thres_val = getThreshVal_Otsu_8u(res);
 	Canny(res,Edgesbis,thres_val*0.5,thres_val);
-	Bedges = BackgroundEdge();
+	//Bedges = BackgroundEdge();
 	vector<Edgecoord> En = MatToVector(CannyCurImage);
 	vector<Edgecoord> DEn = MatToVector(Edgesbis);
 	vector<Edgecoord> Denprevious =MatToVector(CannyLastImage);
 	vector<Edgecoord> MEchange,MEStill;
+	
+	//imshow("oskour",curI);
+	//waitKey(0);
 	//calcul des edge maps mouvante et non mouvante
 	double Tdist=5;
 	for (int i = 0; i < En.size(); i++)
@@ -71,7 +99,7 @@ void EdgeMap::process()
 
 	
 	//reunion des deux Moving edges pour faire la final edge map
-	Mat finaledgemap(cv::Size(curImage.cols, curImage.rows),CV_8U,Scalar(255));
+	Mat finaledgemap(cv::Size(curI.cols, curI.rows),CV_8U,Scalar(255));
 
 	
 	for (int i = 0; i < MEchange.size(); i++)
@@ -82,9 +110,8 @@ void EdgeMap::process()
 	{
 		finaledgemap.at<uchar>(MEStill[i].x,MEStill[i].y)=0;
 	}
-		imshow("img",curImage);
-		//waitKey(0);
-		
+	
+	
    
 	//parcours de la final edge map pour trouver les candidats
 	//horizontal
@@ -149,46 +176,33 @@ void EdgeMap::process()
 			}
 		}
 	}
-	cout << "les candidats c'est bon"<<endl;
-	cout << "hor "<< horizontalcand.size()<<endl;
-	cout << "vert " <<verticalcand.size()<<endl;
-	for (int i = 0; i < verticalcand.size(); i++)
-	{
-		cout << verticalcand[i].x << "  " <<verticalcand[i].y <<endl;
-	}
 	
 	//Trouver les VOP avec les candidats avec un AND
-	Mat VOPS(cv::Size(curImage.cols, curImage.rows),CV_8U,Scalar(255));
+	Mat VOPS(cv::Size(curI.cols, curI.rows),CV_8U,Scalar(255));
+	for(int j=0 ; j < horizontalcand.size();j++){
+		VOPS.at<uchar>(horizontalcand[j].x,horizontalcand[j].y)=0;
+	}
+	//imshow("oskour",VOPS);
+	//waitKey(0);
+	/*
 	for(int i ; i < verticalcand.size();i++){
+			//cout << endl;
+			//cout << endl;
+			//cout <<VOPS.rows << " " << VOPS.cols<< endl;
+			//cout <<verticalcand[i].x << " " << verticalcand[i].y<< endl;
 			VOPS.at<uchar>(verticalcand[i].x,verticalcand[i].y)=0;
 	}
-	for(int j ; j < horizontalcand.size();j++){
-			VOPS.at<uchar>(horizontalcand[j].x,horizontalcand[j].y)=0;
-	}
-	imshow("VOPS",VOPS);
-	
-	waitKey(0);
+	*/
+
 
 
 	//label extracted vops
-	
+	imwrite("res.png"+to_string(indiceb)+".png",VOPS);
+	//imshow("show",VOPS);
+	//waitKey(0);
 	Mat labels(VOPS.size(),CV_32S);
-	// il faut laisser sinon ça bug
-	int nLabels = connectedComponents(VOPS,labels,8);
-	vector<Vec3b> colors(nLabels);
-	colors[0]= Vec3b(0,0,0);
-	for(int i=1; i< nLabels ; ++i){
-		colors[i]=Vec3b ( (rand()&255),(rand()&255),(rand()&255));
-	}
-	Mat labeled(VOPS.size(),CV_8UC3);
-	for(int i ; i < labeled.rows;i++){
-		for(int j ; j < labeled.cols;j++){
-			int label = labels.at<int>(i,j);
-			Vec3b &pixel = labeled.at<Vec3b>(i,j);
-			pixel = colors[label];
-		}
-	}
 
+	//Mat 
 } 
 
 vector<Edgecoord> EdgeMap::MatToVector(Mat toconvertmat){
