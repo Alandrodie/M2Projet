@@ -49,26 +49,22 @@ void EdgeMap::process()
 	vector<Edgecoord> MEchange,MEStill;
 	//calcul des edge maps mouvante et non mouvante
 	double Tdist=5;
-	cout << En.size() << endl;
-	cout << DEn.size() << endl;
-	cout << Denprevious.size() << endl;
-	
 	for (int i = 0; i < En.size(); i++)
 	{
 		//TODO DEBOGUER LA , CORE DUMP Parceque je cheque pas les I des autres vector mais 
 		// si je fais double for ça va prendre 600 minutes pour UNE frame
-		//for (int j = 0; j < DEn.size(); j++){
+		for (int j = 0; j < DEn.size(); j++){
 			Edgecoord temp ={En[i].x,En[i].y};
-	    	if(distanceBetweenTwoPoints(En[i].x,En[i].y,DEn[i].x,DEn[i].y)<=Tdist){
+	    	if(distanceBetweenTwoPoints(En[i].x,En[i].y,DEn[j].x,DEn[j].y)<=Tdist){
 				MEchange.push_back({En[i].x,En[i].y});
 			}
-		//}     
-		//	for (int j = 0; j < Denprevious.size(); j++){        
-			//if(Bedges.at<uchar>(En[i].x,En[i].y)=0){
-			if(distanceBetweenTwoPoints(En[i].x,En[i].y,Denprevious[i].x,Denprevious[i].y)<=Tdist){
+		}     
+		for (int j = 0; j < Denprevious.size(); j++){        
+		//if(Bedges.at<uchar>(En[i].x,En[i].y)=0){
+			if(distanceBetweenTwoPoints(En[i].x,En[i].y,Denprevious[j].x,Denprevious[j].y)<=Tdist){
 				MEStill.push_back({En[i].x,En[i].y});
 			}  
-		//}             
+		}             
 	}   
 		                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 
@@ -80,16 +76,16 @@ void EdgeMap::process()
 	
 	for (int i = 0; i < MEchange.size(); i++)
 	{
-		finaledgemap.at<uchar>(MEchange[i].y,MEchange[i].x)=0;
+		finaledgemap.at<uchar>(MEchange[i].x,MEchange[i].y)=0;
 	}
 	for (int i = 0; i < MEStill.size(); i++)
 	{
-		finaledgemap.at<uchar>(MEStill[i].y,MEStill[i].x)=0;
+		finaledgemap.at<uchar>(MEStill[i].x,MEStill[i].y)=0;
 	}
-		imshow("finaledgemap",finaledgemap);
-		waitKey(0);
+		imshow("img",curImage);
+		//waitKey(0);
 		
-   /*
+   
 	//parcours de la final edge map pour trouver les candidats
 	//horizontal
 	vector<Edgecoord> horizontalcand;
@@ -100,23 +96,26 @@ void EdgeMap::process()
         for (int j = 0; j < finaledgemap.cols; j++)
 		{
 			if(first==-1){
-				if(finaledgemap.at<uchar>(j,i)==0){
+				if(finaledgemap.at<uchar>(i,j)==0){
 					first =j;
 				}
 			}
 			else{
-				if(finaledgemap.at<uchar>(j,i)==0){
+				if(finaledgemap.at<uchar>(i,j)==0){
 					indexlast =j;
 				}
 			}
 		}
 		if(first!=-1 && indexlast!=-1){
-			horizontalcand.push_back({i,first});
-			horizontalcand.push_back({i,indexlast});
+			for (int j = first; j <= indexlast; j++)
+			{
+				horizontalcand.push_back({i,j});
+			}
 		}
 		else if (first!=-1 && indexlast==-1){
-			horizontalcand.push_back({i,first});
-			horizontalcand.push_back({i,finaledgemap.cols});
+			for (int j = first; j <= finaledgemap.rows; j++){
+				horizontalcand.push_back({i,j});
+			}
 		}
 		
 	} 
@@ -129,37 +128,52 @@ void EdgeMap::process()
         for (int j = 0; j < finaledgemap.rows; j++)
 		{
 			if(first==-1){
-				if(finaledgemap.at<uchar>(j,i)==0){
+				if(finaledgemap.at<uchar>(i,j)==0){
 					first =j;
 				}
 			}
 			else{
-				if(finaledgemap.at<uchar>(j,i)==0){
+				if(finaledgemap.at<uchar>(i,j)==0){
 					indexlast =j;
 				}
 			}
 		}
 		if(first!=-1 && indexlast!=-1){
-			verticalcand.push_back({first,i});
-			verticalcand.push_back({indexlast,i});
+			for (int j = first; j <= indexlast; j++){
+				verticalcand.push_back({j,i});
+			}
 		}
 		else if (first!=-1 && indexlast==-1){
-			verticalcand.push_back({first,i});
-			verticalcand.push_back({finaledgemap.rows,i});
+			for (int j = first; j <= finaledgemap.rows; j++){
+				verticalcand.push_back({j,i});
+			}
 		}
 	}
+	cout << "les candidats c'est bon"<<endl;
+	cout << "hor "<< horizontalcand.size()<<endl;
+	cout << "vert " <<verticalcand.size()<<endl;
+	for (int i = 0; i < verticalcand.size(); i++)
+	{
+		cout << verticalcand[i].x << "  " <<verticalcand[i].y <<endl;
+	}
+	
 	//Trouver les VOP avec les candidats avec un AND
-	Mat VOPS(3,3,CV_32F, Scalar(255));
+	Mat VOPS(cv::Size(curImage.cols, curImage.rows),CV_8U,Scalar(255));
 	for(int i ; i < verticalcand.size();i++){
-		for(int j ; j < horizontalcand.size();j++){
-		if(verticalcand[i].x == horizontalcand[i].x && verticalcand[i].y== horizontalcand[i].y)
-			VOPS.at<uchar>(j,i)=0;
-		}
+			VOPS.at<uchar>(verticalcand[i].x,verticalcand[i].y)=0;
 	}
-	imshow("test",VOPS);
+	for(int j ; j < horizontalcand.size();j++){
+			VOPS.at<uchar>(horizontalcand[j].x,horizontalcand[j].y)=0;
+	}
+	imshow("VOPS",VOPS);
+	
 	waitKey(0);
+
+
 	//label extracted vops
+	
 	Mat labels(VOPS.size(),CV_32S);
+	// il faut laisser sinon ça bug
 	int nLabels = connectedComponents(VOPS,labels,8);
 	vector<Vec3b> colors(nLabels);
 	colors[0]= Vec3b(0,0,0);
@@ -174,9 +188,7 @@ void EdgeMap::process()
 			pixel = colors[label];
 		}
 	}
-	imshow("test",labeled);
-	waitKey(0);
-	*/
+
 } 
 
 vector<Edgecoord> EdgeMap::MatToVector(Mat toconvertmat){
@@ -185,7 +197,7 @@ vector<Edgecoord> EdgeMap::MatToVector(Mat toconvertmat){
     {
         for (int j = 0; j < toconvertmat.cols; j++)
 		{
-			if(toconvertmat.at<uchar>(i,j)==0){
+			if(toconvertmat.at<uchar>(i,j)==255){
 				vec.push_back({i,j});
 			}
 		}
